@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Litera - Проверка библиографических ссылок{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Litera</h1>
+            <p class="subtitle">Проверка библиографических ссылок</p>
+        </header>
+        
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+        
+        <footer>
+            <p>&copy; 2025 Московский университет имени С.Ю. Витте</p>
+        </footer>
+    </div>
+</body>
+</html>
+
