@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ reference_type.name }} - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>Тип ссылки: {{ reference_type.name }}</h2>
+        <div class="header-actions">
+            <a href="{% url 'reference_type_update' reference_type.pk %}" class="button button-primary">Редактировать</a>
+            <a href="{% url 'reference_type_delete' reference_type.pk %}" class="button button-danger">Удалить</a>
+        </div>
+    </div>
+    
+    <div class="detail-container">
+        <div class="detail-section">
+            <h3>Основная информация</h3>
+            <div class="detail-field">
+                <label>Код:</label>
+                <div class="detail-value">{{ reference_type.code }}</div>
+            </div>
+            <div class="detail-field">
+                <label>Название:</label>
+                <div class="detail-value">{{ reference_type.name }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="crud-footer">
+        <a href="{% url 'reference_type_list' %}" class="button">Вернуться к списку</a>
+        <a href="{% url 'index' %}" class="button">На главную</a>
+    </div>
+</div>
+{% endblock %}
+

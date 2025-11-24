@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить тип ссылки - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>Удаление типа ссылки</h2>
+    </div>
+    
+    <div class="delete-container">
+        <div class="delete-warning">
+            <p>Вы уверены, что хотите удалить тип ссылки <strong>{{ reference_type.name }}</strong> ({{ reference_type.code }})?</p>
+            <p class="warning-text">Это действие нельзя отменить!</p>
+        </div>
+        
+        <form method="post" class="delete-form">
+            {% csrf_token %}
+            <div class="form-actions">
+                <button type="submit" class="button button-danger">Да, удалить</button>
+                <a href="{% url 'reference_type_detail' reference_type.pk %}" class="button">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

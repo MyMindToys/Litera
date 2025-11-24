@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Поля типа ссылки: {{ reference_type.name }} - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>Поля типа ссылки: {{ reference_type.name }}</h2>
+        <a href="{% url 'reference_type_list' %}" class="button button-primary">Вернуться к списку типов</a>
+    </div>
+    
+    {% if fields %}
+    <div class="table-container">
+        <table class="crud-table">
+            <thead>
+                <tr>
+                    <th>Порядок</th>
+                    <th>Имя поля</th>
+                    <th>Метка</th>
+                    <th>Обязательное</th>
+                    <th>Разделитель перед</th>
+                    <th>Разделитель после</th>
+                    <th>Шаблон</th>
+                    <th>Комментарий</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for field in fields %}
+                <tr>
+                    <td>{{ field.order_index }}</td>
+                    <td>{{ field.name }}</td>
+                    <td>{{ field.label }}</td>
+                    <td>{% if field.required %}Да{% else %}Нет{% endif %}</td>
+                    <td>{{ field.separator_before|default:"—" }}</td>
+                    <td>{{ field.separator_after|default:"—" }}</td>
+                    <td><code>{{ field.pattern }}</code></td>
+                    <td>{{ field.comment|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>Поля для этого типа ссылки не найдены.</p>
+    </div>
+    {% endif %}
+    
+    <div class="crud-footer">
+        <a href="{% url 'reference_type_detail' reference_type.pk %}" class="button">К деталям типа</a>
+        <a href="{% url 'reference_type_list' %}" class="button">К списку типов</a>
+        <a href="{% url 'index' %}" class="button">На главную</a>
+    </div>
+</div>
+{% endblock %}
+

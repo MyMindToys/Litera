@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Результат проверки - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>Проверка библиографических ссылок по ГОСТ 7.0.100–2018</h2>
+    </div>
+    
+    <div class="table-container">
+        <table class="crud-table">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Текст ссылки</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for line in parsed_lines %}
+                <tr>
+                    <td>{{ line.number }}</td>
+                    <td>{{ line.text }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="2" class="empty-state">Текст не содержит строк для обработки.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="crud-footer">
+        <a href="{% url 'check_list' %}" class="button">Вернуться к проверке</a>
+        <a href="{% url 'index' %}" class="button">Вернуться на главную</a>
+    </div>
+</div>
+{% endblock %}
+

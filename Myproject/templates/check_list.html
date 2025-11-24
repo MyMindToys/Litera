@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Проверить список - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>Проверка библиографических ссылок по ГОСТ 7.0.100–2018</h2>
+    </div>
+    
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <button class="tab-button active" onclick="showTab('input', this)">Ввод текста</button>
+            <button class="tab-button" onclick="showTab('list', this)">Список проверок</button>
+        </div>
+        
+        <!-- Таб: Ввод текста -->
+        <div id="tab-input" class="tab-content active" style="display: block;">
+            <div class="check-form-container">
+                <form method="post" class="check-form">
+                    {% csrf_token %}
+                    
+                    <div class="form-field">
+                        <label for="reference_list">Введите список библиографических ссылок (каждая ссылка с новой строки):</label>
+                        <textarea 
+                            id="reference_list" 
+                            name="reference_list" 
+                            class="form-textarea" 
+                            rows="15" 
+                            placeholder="Вставьте список ссылок здесь...&#10;Каждая ссылка должна быть на отдельной строке."
+                        ></textarea>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="button button-primary">Проверить список</button>
+                        <a href="{% url 'index' %}" class="button">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Таб: Список проверок -->
+        <div id="tab-list" class="tab-content" style="display: none;">
+            <div class="tab-header">
+                <h3>Список проверок</h3>
+            </div>
+            {% if reference_texts %}
+            <div class="table-container">
+                <table class="crud-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Название</th>
+                            <th>Статус</th>
+                            <th>Создано</th>
+                            <th>Обновлено</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for text in reference_texts %}
+                        <tr>
+                            <td>{{ text.id }}</td>
+                            <td>{{ text.title|default:"—" }}</td>
+                            <td>{{ text.display_status|default:text.status }}</td>
+                            <td>{{ text.created_at|date:"d.m.Y H:i" }}</td>
+                            <td>{{ text.updated_at|date:"d.m.Y H:i" }}</td>
+                            <td class="actions">
+                                <a href="{% url 'check_list_parse' text.pk %}" class="button-small">Просмотр</a>
+                                <a href="{% url 'check_list_verify' text.pk %}" class="button-small">Проверить</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>Проверки не найдены.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="crud-footer">
+        <a href="{% url 'index' %}" class="button">Вернуться на главную</a>
+    </div>
+</div>
+
+<script>
+function showTab(tabName, element) {
+    // Скрыть все табы
+    var tabs = document.getElementsByClassName('tab-content');
+    for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.remove('active');
+        tabs[i].style.display = 'none';
+    }
+    
+    // Убрать активный класс со всех кнопок
+    var buttons = document.getElementsByClassName('tab-button');
+    for (var i = 0; i < buttons.length; i++) {
+        buttons[i].classList.remove('active');
+    }
+    
+    // Показать выбранный таб
+    var selectedTab = document.getElementById('tab-' + tabName);
+    selectedTab.classList.add('active');
+    selectedTab.style.display = 'block';
+    
+    // Добавить активный класс к выбранной кнопке
+    element.classList.add('active');
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Проверка списка ссылок - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>Проверка библиографических ссылок по ГОСТ 7.0.100–2018</h2>
+        {% if not has_saved_references %}
+        <form method="post" style="display: inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="clean_and_save">
+            <button type="submit" class="button button-primary">Очистить и сохранить ссылки</button>
+        </form>
+        {% else %}
+        <span class="button button-primary" style="opacity: 0.7; cursor: default;">Ссылки уже сохранены</span>
+        {% endif %}
+    </div>
+    
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    {% if has_saved_references %}
+    <form method="post" id="save-types-form">
+        {% csrf_token %}
+    {% endif %}
+    
+    <div class="table-container">
+        <table class="crud-table">
+            <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Текст ссылки</th>
+                    {% if has_saved_references %}
+                    <th>Тип ссылки</th>
+                    <th>Статус</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for ref in references_list %}
+                <tr>
+                    <td>{{ ref.number }}</td>
+                    <td class="reference-text">{{ ref.text }}</td>
+                    {% if has_saved_references %}
+                    <td>
+                        <select name="reference_type_{{ ref.id }}" class="form-select">
+                            <option value="">— Не выбран —</option>
+                            {% for ref_type in reference_types %}
+                            <option value="{{ ref_type.id }}" {% if ref.reference_type_id == ref_type.id %}selected{% endif %}>
+                                {{ ref_type.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        {% if ref.status == "ok" %}
+                            <span class="status-ok">ОК</span>
+                        {% elif ref.status == "error" %}
+                            <span class="status-error">
+                                ОШИБ
+                                {% with ref.reference_obj.issues.count as cnt %}
+                                    {% if cnt %} ({{ cnt }}){% endif %}
+                                {% endwith %}
+                            </span>
+                            {% with ref.reference_obj.issues.count as cnt %}
+                                {% if cnt %}
+                                    <a href="{% url 'reference_errors' ref.id %}" class="button-small" style="margin-left: 10px;">Подробности</a>
+                                {% endif %}
+                            {% endwith %}
+                        {% else %}
+                            <span class="status-unknown">—</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if has_saved_references %}4{% else %}2{% endif %}" class="empty-state">Текст не содержит строк для обработки.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if has_saved_references %}
+        <div class="crud-footer">
+            <button type="submit" form="save-types-form" name="action" value="save_types" class="button button-primary">Сохранить типы</button>
+            <button type="submit" form="save-types-form" name="action" value="check_all" class="button button-primary">Проверить</button>
+            <a href="{% url 'check_list' %}" class="button">Вернуться к проверке</a>
+            <a href="{% url 'index' %}" class="button">Вернуться на главную</a>
+        </div>
+    </form>
+    
+    {% if has_saved_references %}
+    <div class="issues-section">
+        <h3>Проблемы оформления</h3>
+        <div class="table-container">
+            <table class="crud-table issues-table">
+                <thead>
+                    <tr>
+                        <th>№ ссылки</th>
+                        <th>Поле</th>
+                        <th>Серьезность</th>
+                        <th>Сообщение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if issues %}
+                        {% for issue in issues %}
+                        <tr>
+                            <td>{{ issue.reference_number }}</td>
+                            <td>{{ issue.field_name|default:"—" }}</td>
+                            <td>
+                                {% if issue.severity == "error" %}
+                                    <span class="severity-error">{{ issue.severity }}</span>
+                                {% elif issue.severity == "warning" %}
+                                    <span class="severity-warning">{{ issue.severity }}</span>
+                                {% else %}
+                                    {{ issue.severity }}
+                                {% endif %}
+                            </td>
+                            <td>{{ issue.message }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="empty-state">Проблем не обнаружено.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <div class="crud-footer">
+        <a href="{% url 'check_list' %}" class="button">Вернуться к проверке</a>
+        <a href="{% url 'index' %}" class="button">Вернуться на главную</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+

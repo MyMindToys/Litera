@@ -24,12 +24,17 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.index, name='index'),
     path('about/', views.about, name='about'),
+    path('check-list/', views.check_list, name='check_list'),
+    path('check-list/<int:pk>/parse/', views.check_list_parse, name='check_list_parse'),
+    path('check-list/<int:pk>/verify/', views.check_list_verify, name='check_list_verify'),
+    path('reference/<int:pk>/errors/', views.reference_errors, name='reference_errors'),
     # CRUD для ReferenceType
     path('reference-types/', views.reference_type_list, name='reference_type_list'),
     path('reference-types/create/', views.reference_type_create, name='reference_type_create'),
     path('reference-types/<int:pk>/', views.reference_type_detail, name='reference_type_detail'),
     path('reference-types/<int:pk>/update/', views.reference_type_update, name='reference_type_update'),
     path('reference-types/<int:pk>/delete/', views.reference_type_delete, name='reference_type_delete'),
+    path('reference-types/<int:pk>/fields/', views.reference_type_fields, name='reference_type_fields'),
 ]
 
 if settings.DEBUG:

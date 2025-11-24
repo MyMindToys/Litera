@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Litera - Проверка библиографических ссылок{% endblock %}</title>
+    <title>{% block title %}Litera - Проверка библиографических ссылок по ГОСТ 7.0.100–2018{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Litera</h1>
-            <p class="subtitle">Проверка библиографических ссылок</p>
+            <p class="subtitle">Проверка библиографических ссылок по ГОСТ 7.0.100–2018</p>
         </header>
         
         <main>

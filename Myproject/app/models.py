@@ -51,6 +51,14 @@ class ReferenceField(models.Model):
 
 class Reference(models.Model):
     """Библиографическая ссылка"""
+    reference_text = models.ForeignKey(
+        'ReferenceText',
+        on_delete=models.CASCADE,
+        related_name='references',
+        null=True,
+        blank=True,
+        verbose_name="Текст списка ссылок"
+    )
     raw_text = models.TextField(verbose_name="Исходный текст")
     normalized_text = models.TextField(blank=True, verbose_name="Нормализованный текст")
     reference_type = models.ForeignKey(
@@ -96,3 +104,44 @@ class ReferenceIssue(models.Model):
 
     def __str__(self):
         return f"{self.reference} - {self.severity}: {self.message[:50]}"
+
+
+class ReferenceText(models.Model):
+    """Хранение исходного и обработанного текста списка ссылок"""
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name="Название"
+    )
+    input_text = models.TextField(
+        verbose_name="Исходный текст"
+    )
+    intermediate_text = models.TextField(
+        blank=True,
+        verbose_name="Промежуточный текст"
+    )
+    output_text = models.TextField(
+        blank=True,
+        verbose_name="Итоговый текст"
+    )
+    status = models.CharField(
+        max_length=32,
+        default="new",
+        verbose_name="Статус"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Создано"
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Обновлено"
+    )
+
+    class Meta:
+        verbose_name = "Текст списка ссылок"
+        verbose_name_plural = "Тексты списков ссылок"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title or f"Текст #{self.pk}"

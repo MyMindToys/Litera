@@ -5,8 +5,8 @@
 {% block content %}
 <div class="main-content">
     <div class="buttons-container">
-        <a href="#" class="button button-primary">Смотреть шаблоны</a>
-        <a href="#" class="button button-primary">Проверить список</a>
+        <a href="{% url 'reference_type_list' %}" class="button button-primary">Смотреть шаблоны</a>
+        <a href="{% url 'check_list' %}" class="button button-primary">Проверить список</a>
         <a href="{% url 'about' %}" class="button button-primary">О программе</a>
     </div>
 </div>

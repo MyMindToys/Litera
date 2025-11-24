@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}Детали ошибок - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>Детали ошибок для ссылки</h2>
+        <a href="{% url 'check_list_verify' reference.reference_text.id %}" class="button button-primary">Вернуться к проверке</a>
+    </div>
+    
+    <div class="reference-details-section">
+        <h3>Исходный текст ссылки</h3>
+        <div class="code-display">
+            {{ reference.raw_text }}
+        </div>
+    </div>
+    
+    {% if reference.reference_type %}
+    <div class="reference-details-section">
+        <h3>Тип ссылки</h3>
+        <p>{{ reference.reference_type.name }}</p>
+    </div>
+    {% endif %}
+    
+    {% if parsed_data %}
+    <div class="reference-details-section">
+        <h3>Результат парсинга</h3>
+        <div class="table-container">
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>Поле</th>
+                        <th>Значение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for key, value in parsed_data.items %}
+                    <tr>
+                        <td><strong>{{ key }}</strong></td>
+                        <td>{{ value|default:"—" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="reference-details-section">
+        <h3>Результат парсинга</h3>
+        <p class="empty-state">Парсинг не выполнен или не удался.</p>
+    </div>
+    {% endif %}
+    
+    <div class="reference-details-section">
+        <h3>Обнаруженные проблемы</h3>
+        {% if issues %}
+        <div class="table-container">
+            <table class="crud-table issues-table">
+                <thead>
+                    <tr>
+                        <th>Поле</th>
+                        <th>Серьезность</th>
+                        <th>Сообщение</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for issue in issues %}
+                    <tr>
+                        <td>{{ issue.field_name|default:"—" }}</td>
+                        <td>
+                            {% if issue.severity == "error" %}
+                                <span class="severity-error">{{ issue.severity }}</span>
+                            {% elif issue.severity == "warning" %}
+                                <span class="severity-warning">{{ issue.severity }}</span>
+                            {% else %}
+                                {{ issue.severity }}
+                            {% endif %}
+                        </td>
+                        <td>{{ issue.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="empty-state">Проблем не обнаружено.</p>
+        {% endif %}
+    </div>
+    
+    <div class="crud-footer">
+        <a href="{% url 'check_list_verify' reference.reference_text.id %}" class="button">Вернуться к проверке</a>
+        <a href="{% url 'check_list' %}" class="button">Вернуться к списку проверок</a>
+        <a href="{% url 'index' %}" class="button">Вернуться на главную</a>
+    </div>
+</div>
+{% endblock %}
+
