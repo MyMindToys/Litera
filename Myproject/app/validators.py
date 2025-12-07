@@ -84,3 +84,4 @@ def check_reference(reference: Reference) -> None:
     if errors:
         ReferenceIssue.objects.bulk_create(errors)
 
+

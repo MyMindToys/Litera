@@ -23,3 +23,4 @@ class ReferenceTypeForm(forms.ModelForm):
             'name': 'Название',
         }
 
+

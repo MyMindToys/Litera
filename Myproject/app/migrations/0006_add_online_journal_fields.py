@@ -58,3 +58,4 @@ class Migration(migrations.Migration):
         migrations.RunPython(add_online_journal_fields, remove_online_journal_fields),
     ]
 
+

@@ -7,3 +7,4 @@ content = """Заменить: templates
 with open('../temp_patch/README_PATCH.txt', 'w', encoding='utf-8') as f:
     f.write(content)
 
+
