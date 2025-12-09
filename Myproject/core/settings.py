@@ -125,8 +125,8 @@ STATICFILES_DIRS = [
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# WhiteNoise configuration for static files
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+# WhiteNoise будет автоматически обслуживать статические файлы
+# Не указываем STATICFILES_STORAGE, чтобы использовать настройки по умолчанию
 
 # Media files
 MEDIA_URL = "/media/"
