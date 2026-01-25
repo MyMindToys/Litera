@@ -1,3 +1,11 @@
+Myproject_old.zip
+Myproject.zip
+Myproject_oldext.rar
+README_PATCH_temp.txt
+.gitignore
+.gitattributes
+лишнее
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
