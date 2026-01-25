@@ -92,7 +92,7 @@
         <div class="crud-footer">
             <button type="submit" form="save-types-form" name="action" value="save_types" class="button button-primary">Сохранить типы</button>
             <button type="submit" form="save-types-form" name="action" value="check_all" class="button button-primary">Проверить</button>
-            <a href="{% url 'check_list' %}" class="button">Вернуться к проверке</a>
+            <a href="{% url 'check_list_edit' reference_text.pk %}" class="button">Отредактировать список</a>
             <a href="{% url 'index' %}" class="button">Вернуться на главную</a>
         </div>
     </form>
@@ -141,7 +141,7 @@
     
     {% else %}
     <div class="crud-footer">
-        <a href="{% url 'check_list' %}" class="button">Вернуться к проверке</a>
+        <a href="{% url 'check_list_edit' reference_text.pk %}" class="button">Отредактировать список</a>
         <a href="{% url 'index' %}" class="button">Вернуться на главную</a>
     </div>
     {% endif %}

@@ -5,9 +5,16 @@
 {% block content %}
 <div class="main-content">
     <div class="buttons-container">
-        <a href="{% url 'reference_type_list' %}" class="button button-primary">Смотреть шаблоны</a>
-        <a href="{% url 'check_list' %}" class="button button-primary">Проверить список</a>
-        <a href="{% url 'about' %}" class="button button-primary">О программе</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'about' %}" class="button button-primary">О программе</a>
+            <a href="{% url 'check_list' %}" class="button button-primary">Проверить список</a>
+            {% if can_see_templates %}
+                <a href="{% url 'reference_type_list' %}" class="button button-primary">Смотреть шаблоны</a>
+            {% endif %}
+        {% else %}
+            <a href="{% url 'about' %}" class="button button-primary">О программе</a>
+            <a href="{% url 'login' %}" class="button button-primary">Войти</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

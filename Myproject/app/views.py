@@ -1,34 +1,50 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.http import HttpResponseForbidden
+
 from .models import ReferenceType, ReferenceField, Reference, ReferenceIssue, ReferenceText
 from .forms import ReferenceTypeForm
 from .utils import clean_reference_line
 from .parsers import parse_reference_instance
 from .validators import check_reference
+from .auth_utils import (
+    login_required,
+    role_required,
+    is_admin,
+    is_operator,
+    can_edit_templates,
+    can_see_all_checks,
+    can_see_templates,
+)
 
 
 def index(request):
-    """Главная страница"""
-    return render(request, 'index.html')
+    """Главная: неавторизованный — только О программе и Войти; иначе — по ролям."""
+    return render(request, "index.html")
 
 
 def about(request):
-    """Страница О программе"""
-    return render(request, 'about.html')
+    """О программе — доступно всем."""
+    return render(request, "about.html")
 
 
+@login_required
 def check_list(request):
-    """Страница проверки списка ссылок"""
-    if request.method == 'POST':
-        reference_list = request.POST.get('reference_list', '').strip()
+    """Страница проверки списка ссылок. user — только свои, operator/admin — все."""
+    if request.method == "POST":
+        reference_list = request.POST.get("reference_list", "").strip()
         if reference_list:
             reference_text = ReferenceText.objects.create(
                 input_text=reference_list,
-                status='new'
+                status="new",
+                user=request.user,
             )
-            return redirect('check_list_parse', pk=reference_text.pk)
-    
-    reference_texts = ReferenceText.objects.all()
+            return redirect("check_list_parse", pk=reference_text.pk)
+
+    if can_see_all_checks(request.user):
+        reference_texts = ReferenceText.objects.all()
+    else:
+        reference_texts = ReferenceText.objects.filter(user=request.user)
     # Проверяем, есть ли у каждого ReferenceText связанные Reference с заполненными данными
     for text in reference_texts:
         try:
@@ -47,9 +63,13 @@ def check_list(request):
     })
 
 
+@login_required
 def check_list_parse(request, pk):
-    """Страница с распарсенным текстом по строкам"""
-    reference_text = get_object_or_404(ReferenceText, pk=pk)
+    """Страница с распарсенным текстом по строкам. user — только свои проверки."""
+    if can_see_all_checks(request.user):
+        reference_text = get_object_or_404(ReferenceText, pk=pk)
+    else:
+        reference_text = get_object_or_404(ReferenceText, pk=pk, user=request.user)
     
     # Разбиваем текст на строки
     lines = reference_text.input_text.splitlines()
@@ -69,9 +89,37 @@ def check_list_parse(request, pk):
     })
 
 
+@login_required
+def check_list_edit(request, pk):
+    """Редактирование исходного текста списка ссылок. После сохранения — удаление сохранённых Reference и редирект на verify."""
+    if can_see_all_checks(request.user):
+        reference_text = get_object_or_404(ReferenceText, pk=pk)
+    else:
+        reference_text = get_object_or_404(ReferenceText, pk=pk, user=request.user)
+
+    if request.method == "POST":
+        new_text = request.POST.get("input_text", "").strip()
+        if new_text:
+            reference_text.input_text = new_text
+            reference_text.intermediate_text = ""
+            reference_text.output_text = ""
+            reference_text.save()
+            Reference.objects.filter(reference_text=reference_text).delete()
+            messages.success(request, "Текст сохранён. Выполните «Очистить и сохранить ссылки» для повторной обработки.")
+        else:
+            messages.warning(request, "Текст не может быть пустым.")
+        return redirect("check_list_verify", pk=pk)
+
+    return render(request, "check_list_edit.html", {"reference_text": reference_text})
+
+
+@login_required
 def check_list_verify(request, pk):
-    """Страница проверки списка ссылок"""
-    reference_text = get_object_or_404(ReferenceText, pk=pk)
+    """Страница проверки списка ссылок. user — только свои проверки."""
+    if can_see_all_checks(request.user):
+        reference_text = get_object_or_404(ReferenceText, pk=pk)
+    else:
+        reference_text = get_object_or_404(ReferenceText, pk=pk, user=request.user)
     
     # Обработка POST-запроса для проверки всех ссылок
     if request.method == 'POST' and request.POST.get('action') == 'check_all':
@@ -246,53 +294,81 @@ def check_list_verify(request, pk):
     })
 
 
+@login_required
 def reference_errors(request, pk):
-    """Страница с детальной информацией об ошибках для одной ссылки"""
+    """Страница с детальной информацией об ошибках. user — только свои проверки."""
     reference = get_object_or_404(Reference, pk=pk)
-    
+    rt = reference.reference_text
+    if not can_see_all_checks(request.user):
+        if not rt or rt.user != request.user:
+            return HttpResponseForbidden("Доступ запрещён.")
+
     # Получаем все проблемы для этой ссылки
     try:
         issues = ReferenceIssue.objects.filter(reference=reference).order_by('-severity', 'field_name')
     except Exception:
         issues = []
-    
+
     # Получаем parsed_data
     parsed_data = reference.parsed_data if hasattr(reference, 'parsed_data') and reference.parsed_data else {}
-    
+
+    # Ход парсинга: когда парсинг не удался — показываем, что найдено, что нет
+    parse_steps = []
+    if not parsed_data and reference.reference_type_id:
+        try:
+            from .parse_diagnostics import get_parse_diagnostic
+            parse_steps = get_parse_diagnostic(reference.raw_text or "", reference.reference_type.code)
+        except Exception:
+            parse_steps = []
+
     return render(request, 'reference_errors.html', {
         'reference': reference,
         'issues': issues,
         'parsed_data': parsed_data,
+        'parse_steps': parse_steps,
     })
 
 
-# CRUD для ReferenceType
+# CRUD для ReferenceType: operator — просмотр, admin — полный доступ
+@login_required
 def reference_type_list(request):
-    """Список типов ссылок с табами для всех моделей"""
+    """Список типов ссылок. operator и admin — просмотр; admin — редактирование."""
+    if not can_see_templates(request.user):
+        return HttpResponseForbidden("Доступ запрещён.")
     reference_types = ReferenceType.objects.all()
     reference_fields = ReferenceField.objects.all()
     references = Reference.objects.all()
     reference_issues = ReferenceIssue.objects.all()
-    
-    return render(request, 'reference_type/list.html', {
-        'reference_types': reference_types,
-        'reference_fields': reference_fields,
-        'references': references,
-        'reference_issues': reference_issues,
-    })
+    return render(
+        request,
+        "reference_type/list.html",
+        {
+            "reference_types": reference_types,
+            "reference_fields": reference_fields,
+            "references": references,
+            "reference_issues": reference_issues,
+            "can_edit": can_edit_templates(request.user),
+        },
+    )
 
 
+@login_required
 def reference_type_detail(request, pk):
-    """Детальный просмотр типа ссылки"""
+    """Детальный просмотр типа ссылки. operator — просмотр, admin — редактирование."""
+    if not can_see_templates(request.user):
+        return HttpResponseForbidden("Доступ запрещён.")
     reference_type = get_object_or_404(ReferenceType, pk=pk)
-    return render(request, 'reference_type/detail.html', {
-        'reference_type': reference_type
-    })
+    return render(
+        request,
+        "reference_type/detail.html",
+        {"reference_type": reference_type, "can_edit": can_edit_templates(request.user)},
+    )
 
 
+@role_required("admin")
 def reference_type_create(request):
-    """Создание нового типа ссылки"""
-    if request.method == 'POST':
+    """Создание нового типа ссылки — только admin."""
+    if request.method == "POST":
         form = ReferenceTypeForm(request.POST)
         if form.is_valid():
             form.save()
@@ -306,10 +382,11 @@ def reference_type_create(request):
     })
 
 
+@role_required("admin")
 def reference_type_update(request, pk):
-    """Редактирование типа ссылки"""
+    """Редактирование типа ссылки — только admin."""
     reference_type = get_object_or_404(ReferenceType, pk=pk)
-    if request.method == 'POST':
+    if request.method == "POST":
         form = ReferenceTypeForm(request.POST, instance=reference_type)
         if form.is_valid():
             form.save()
@@ -324,10 +401,11 @@ def reference_type_update(request, pk):
     })
 
 
+@role_required("admin")
 def reference_type_delete(request, pk):
-    """Удаление типа ссылки"""
+    """Удаление типа ссылки — только admin."""
     reference_type = get_object_or_404(ReferenceType, pk=pk)
-    if request.method == 'POST':
+    if request.method == "POST":
         reference_type.delete()
         messages.success(request, 'Тип ссылки успешно удален.')
         return redirect('reference_type_list')
@@ -336,11 +414,15 @@ def reference_type_delete(request, pk):
     })
 
 
+@login_required
 def reference_type_fields(request, pk):
-    """Список полей для конкретного типа ссылки"""
+    """Список полей типа ссылки. operator и admin — просмотр."""
+    if not can_see_templates(request.user):
+        return HttpResponseForbidden("Доступ запрещён.")
     reference_type = get_object_or_404(ReferenceType, pk=pk)
-    fields = ReferenceField.objects.filter(reference_type=reference_type).order_by('order_index')
-    return render(request, 'reference_type/fields.html', {
-        'reference_type': reference_type,
-        'fields': fields
-    })
+    fields = ReferenceField.objects.filter(reference_type=reference_type).order_by("order_index")
+    return render(
+        request,
+        "reference_type/fields.html",
+        {"reference_type": reference_type, "fields": fields, "can_edit": can_edit_templates(request.user)},
+    )

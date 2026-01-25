@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Вход - Litera{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="about-content">
+        <div class="about-section">
+            <h2>Вход</h2>
+            {% if form.errors %}
+            <div class="message" style="border-left-color: #dc3545;">Неверное имя пользователя или пароль.</div>
+            {% endif %}
+            <form method="post" class="crud-form" style="max-width: 400px;">
+                {% csrf_token %}
+                <div class="form-field">
+                    <label for="id_username">Имя пользователя</label>
+                    <input type="text" name="username" id="id_username" class="form-input" required autofocus>
+                </div>
+                <div class="form-field">
+                    <label for="id_password">Пароль</label>
+                    <input type="password" name="password" id="id_password" class="form-input" required>
+                </div>
+                <input type="hidden" name="next" value="{{ next }}">
+                <div class="form-actions">
+                    <button type="submit" class="button button-primary">Войти</button>
+                    <a href="{% url 'index' %}" class="button">Отмена</a>
+                </div>
+            </form>
+            <p style="margin-top: 20px;"><a href="{% url 'about' %}">О программе</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -51,6 +51,43 @@
         <p class="empty-state">Парсинг не выполнен или не удался.</p>
     </div>
     {% endif %}
+
+    {% if parse_steps %}
+    <div class="reference-details-section">
+        <h3>Ход парсинга</h3>
+        <p class="help-text">Что было найдено и что нет при разборе ссылки по выбранному типу.</p>
+        <div class="table-container">
+            <table class="crud-table parse-steps-table">
+                <thead>
+                    <tr>
+                        <th>Шаг</th>
+                        <th>Найдено</th>
+                        <th>Значение / примечание</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in parse_steps %}
+                    <tr class="parse-step-{{ s.found|yesno:'ok,fail' }}">
+                        <td><strong>{{ s.step }}</strong></td>
+                        <td>
+                            {% if s.found %}
+                                <span class="step-found">да</span>
+                            {% else %}
+                                <span class="step-missing">нет</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if s.value %}{{ s.value }}{% endif %}
+                            {% if s.detail %}{% if s.value %} — {% endif %}<span class="step-detail">{{ s.detail }}</span>{% endif %}
+                            {% if not s.value and not s.detail %}—{% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
     
     <div class="reference-details-section">
         <h3>Обнаруженные проблемы</h3>

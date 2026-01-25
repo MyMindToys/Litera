@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Редактировать список - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>Редактирование списка ссылок</h2>
+    </div>
+
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="check-form-container">
+        <form method="post" class="check-form">
+            {% csrf_token %}
+            <div class="form-field">
+                <label for="input_text">Список библиографических ссылок (каждая ссылка с новой строки):</label>
+                <textarea
+                    id="input_text"
+                    name="input_text"
+                    class="form-textarea"
+                    rows="15"
+                    placeholder="Вставьте список ссылок здесь...&#10;Каждая ссылка должна быть на отдельной строке."
+                >{{ reference_text.input_text }}</textarea>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="button button-primary">Сохранить</button>
+                <a href="{% url 'check_list_verify' reference_text.pk %}" class="button">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

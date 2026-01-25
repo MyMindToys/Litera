@@ -6,10 +6,12 @@
 <div class="crud-content">
     <div class="crud-header">
         <h2>Тип ссылки: {{ reference_type.name }}</h2>
+        {% if can_edit %}
         <div class="header-actions">
             <a href="{% url 'reference_type_update' reference_type.pk %}" class="button button-primary">Редактировать</a>
             <a href="{% url 'reference_type_delete' reference_type.pk %}" class="button button-danger">Удалить</a>
         </div>
+        {% endif %}
     </div>
     
     <div class="detail-container">

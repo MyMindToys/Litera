@@ -24,5 +24,3 @@ def clean_reference_line(text: str) -> str:
     value = value.rstrip()
 
     return value
-
-

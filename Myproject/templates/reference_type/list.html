@@ -27,7 +27,9 @@
         <div id="tab-types" class="tab-content active" style="display: block;">
             <div class="tab-header">
                 <h3>Типы ссылок</h3>
+                {% if can_edit %}
                 <a href="{% url 'reference_type_create' %}" class="button button-primary">Создать новый тип</a>
+                {% endif %}
             </div>
             {% if reference_types %}
             <div class="table-container">
@@ -47,8 +49,10 @@
                     <td class="actions">
                         <a href="{% url 'reference_type_fields' reference_type.pk %}" class="button-small">Поля</a>
                         <a href="{% url 'reference_type_detail' reference_type.pk %}" class="button-small">Просмотр</a>
+                        {% if can_edit %}
                         <a href="{% url 'reference_type_update' reference_type.pk %}" class="button-small">Редактировать</a>
                         <a href="{% url 'reference_type_delete' reference_type.pk %}" class="button-small button-danger">Удалить</a>
+                        {% endif %}
                     </td>
                         </tr>
                         {% endfor %}
@@ -57,7 +61,7 @@
             </div>
             {% else %}
             <div class="empty-state">
-                <p>Типы ссылок не найдены. <a href="{% url 'reference_type_create' %}">Создать первый тип?</a></p>
+                <p>Типы ссылок не найдены.{% if can_edit %} <a href="{% url 'reference_type_create' %}">Создать первый тип?</a>{% endif %}</p>
             </div>
             {% endif %}
         </div>

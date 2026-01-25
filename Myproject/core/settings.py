@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-566_0bxu3jc39(u2c=nl^wi%l4^9z%q^l9_0vhcmm16k0c!@**
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["litera-gwd4.onrender.com", "127.0.0.1", "localhost"]
 
 
 # Application definition
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -65,6 +66,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'app.context_processors.litera_nav',
             ],
         },
     },
@@ -118,10 +120,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'app' / 'static',
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# WhiteNoise будет автоматически обслуживать статические файлы
+# Не указываем STATICFILES_STORAGE, чтобы использовать настройки по умолчанию
 
 # Media files
 MEDIA_URL = "/media/"
@@ -131,3 +137,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Авторизация
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"

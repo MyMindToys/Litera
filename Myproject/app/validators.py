@@ -75,7 +75,21 @@ def check_reference(reference: Reference) -> None:
             except re.error:
                 # Если регулярка в БД некорректная, просто игнорируем проверку формата
                 pass
-    
+
+    # Специальное правило для ONLINE: при наличии URL дата обращения обязательна (ГОСТ для сетевых ресурсов)
+    if reference.reference_type and reference.reference_type.code == "ONLINE":
+        url_val = (data.get("url") or "").strip()
+        access_val = (data.get("access_date") or "").strip()
+        if url_val and not access_val:
+            errors.append(
+                ReferenceIssue(
+                    reference=reference,
+                    field_name="access_date",
+                    severity="error",
+                    message="Для сетевого ресурса (с URL) укажите дату обращения: (дата обращения: ДД.ММ.ГГГГ).",
+                )
+            )
+
     # Сохранить parsed_data и статус
     reference.parsed_data = data
     reference.status = "error" if errors else "ok"

@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class ReferenceType(models.Model):
@@ -107,7 +108,15 @@ class ReferenceIssue(models.Model):
 
 
 class ReferenceText(models.Model):
-    """Хранение исходного и обработанного текста списка ссылок"""
+    """Хранение исходного и обработанного текста списка ссылок (проверка)"""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reference_texts",
+        verbose_name="Пользователь",
+    )
     title = models.CharField(
         max_length=255,
         blank=True,
