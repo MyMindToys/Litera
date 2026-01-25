@@ -21,9 +21,16 @@ class CustomUserAdmin(BaseUserAdmin):
     get_roles.short_description = "Роли (admin / operator / user)"
 
 
+class ReferenceFieldInline(admin.TabularInline):
+    model = ReferenceField
+    extra = 0
+    fields = ("name", "label", "required", "order_index", "separator_before", "separator_after", "comment")
+
+
 @admin.register(ReferenceType)
 class ReferenceTypeAdmin(admin.ModelAdmin):
     list_display = ("code", "name")
+    inlines = [ReferenceFieldInline]
 
 
 @admin.register(ReferenceText)

@@ -5,8 +5,13 @@
 {% block content %}
 <div class="crud-content">
     <div class="crud-header">
-        <h2>Поля типа ссылки: {{ reference_type.name }}</h2>
-        <a href="{% url 'reference_type_list' %}" class="button button-primary">Вернуться к списку типов</a>
+        <h3>Поля типа ссылки: {{ reference_type.name }}</h3>
+        <div class="header-actions">
+            {% if can_edit %}
+            <a href="{% url 'reference_field_create' reference_type.pk %}" class="button button-primary">Добавить поле</a>
+            {% endif %}
+            <a href="{% url 'reference_type_list' %}" class="button button-primary">Вернуться к списку типов</a>
+        </div>
     </div>
     
     {% if fields %}
@@ -20,8 +25,8 @@
                     <th>Обязательное</th>
                     <th>Разделитель перед</th>
                     <th>Разделитель после</th>
-                    <th>Шаблон</th>
                     <th>Комментарий</th>
+                    {% if can_edit %}<th>Действия</th>{% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -33,8 +38,12 @@
                     <td>{% if field.required %}Да{% else %}Нет{% endif %}</td>
                     <td>{{ field.separator_before|default:"—" }}</td>
                     <td>{{ field.separator_after|default:"—" }}</td>
-                    <td><code>{{ field.pattern }}</code></td>
                     <td>{{ field.comment|default:"—" }}</td>
+                    {% if can_edit %}
+                    <td>
+                        <a href="{% url 'reference_field_update' reference_type.pk field.pk %}" class="button-small">Редактировать</a>
+                    </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>

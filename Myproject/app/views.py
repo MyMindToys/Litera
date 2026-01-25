@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.http import HttpResponseForbidden
 
 from .models import ReferenceType, ReferenceField, Reference, ReferenceIssue, ReferenceText
-from .forms import ReferenceTypeForm
+from .forms import ReferenceTypeForm, ReferenceFieldForm
 from .utils import clean_reference_line
 from .parsers import parse_reference_instance
 from .validators import check_reference
@@ -406,7 +406,7 @@ def reference_type_delete(request, pk):
 
 @login_required
 def reference_type_fields(request, pk):
-    """Список полей типа ссылки. operator и admin — просмотр."""
+    """Список полей типа ссылки. operator и admin — просмотр; admin — редактирование полей."""
     if not can_see_templates(request.user):
         return HttpResponseForbidden("Доступ запрещён.")
     reference_type = get_object_or_404(ReferenceType, pk=pk)
@@ -416,3 +416,47 @@ def reference_type_fields(request, pk):
         "reference_type/fields.html",
         {"reference_type": reference_type, "fields": fields, "can_edit": can_edit_templates(request.user)},
     )
+
+
+@login_required
+@role_required("admin")
+def reference_field_create(request, type_pk):
+    """Добавить поле к типу ссылки. Только admin."""
+    reference_type = get_object_or_404(ReferenceType, pk=type_pk)
+    if request.method == "POST":
+        form = ReferenceFieldForm(request.POST)
+        if form.is_valid():
+            obj = form.save(commit=False)
+            obj.reference_type = reference_type
+            obj.pattern = ".*"  # в UI шаблон убран; для БД (NOT NULL) — «всё сходит»
+            obj.save()
+            messages.success(request, "Поле добавлено.")
+            return redirect("reference_type_fields", pk=type_pk)
+    else:
+        form = ReferenceFieldForm(initial={"order_index": reference_type.fields.count()})
+    return render(request, "reference_type/field_form.html", {
+        "form": form, "reference_type": reference_type, "title": "Добавить поле",
+    })
+
+
+@login_required
+@role_required("admin")
+def reference_field_update(request, type_pk, field_pk):
+    """Редактирование поля типа ссылки. Только admin."""
+    reference_type = get_object_or_404(ReferenceType, pk=type_pk)
+    field = get_object_or_404(ReferenceField, pk=field_pk, reference_type=reference_type)
+    if request.method == "POST":
+        # Поле name в форме отключено, в POST не приходит — подставляем, чтобы валидация не падала
+        data = request.POST.copy()
+        data["name"] = field.name
+        form = ReferenceFieldForm(data, instance=field)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Поле сохранено.")
+            return redirect("reference_type_fields", pk=type_pk)
+    else:
+        form = ReferenceFieldForm(instance=field)
+        form.fields["name"].disabled = True  # имя — ключ в парсерах, менять опасно
+    return render(request, "reference_type/field_form.html", {
+        "form": form, "reference_type": reference_type, "field": field, "title": "Редактировать поле",
+    })

@@ -39,6 +39,8 @@ urlpatterns = [
     path('reference-types/<int:pk>/update/', views.reference_type_update, name='reference_type_update'),
     path('reference-types/<int:pk>/delete/', views.reference_type_delete, name='reference_type_delete'),
     path('reference-types/<int:pk>/fields/', views.reference_type_fields, name='reference_type_fields'),
+    path('reference-types/<int:type_pk>/fields/create/', views.reference_field_create, name='reference_field_create'),
+    path('reference-types/<int:type_pk>/fields/<int:field_pk>/update/', views.reference_field_update, name='reference_field_update'),
 ]
 
 if settings.DEBUG:

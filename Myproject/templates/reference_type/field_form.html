@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}: {{ reference_type.name }} - Litera{% endblock %}
+
+{% block content %}
+<div class="crud-content">
+    <div class="crud-header">
+        <h2>{{ title }} — {{ reference_type.name }}</h2>
+    </div>
+    
+    <div class="form-container">
+        <form method="post" class="crud-form">
+            {% csrf_token %}
+            
+            {% for f in form %}
+            <div class="form-field">
+                <label for="{{ f.id_for_label }}">{{ f.label }}{% if f.field.required %} *{% endif %}:</label>
+                {{ f }}
+                {% if f.errors %}
+                <div class="form-error">{{ f.errors }}</div>
+                {% endif %}
+                {% if f.help_text %}
+                <span class="form-help">{{ f.help_text }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <div class="form-actions">
+                <button type="submit" class="button button-primary">Сохранить</button>
+                <a href="{% url 'reference_type_fields' reference_type.pk %}" class="button">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
