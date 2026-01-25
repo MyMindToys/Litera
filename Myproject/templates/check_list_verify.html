@@ -62,20 +62,11 @@
                         {% if ref.status == "ok" %}
                             <span class="status-ok">ОК</span>
                         {% elif ref.status == "error" %}
-                            <span class="status-error">
-                                ОШИБ
-                                {% with ref.reference_obj.issues.count as cnt %}
-                                    {% if cnt %} ({{ cnt }}){% endif %}
-                                {% endwith %}
-                            </span>
-                            {% with ref.reference_obj.issues.count as cnt %}
-                                {% if cnt %}
-                                    <a href="{% url 'reference_errors' ref.id %}" class="button-small" style="margin-left: 10px;">Подробности</a>
-                                {% endif %}
-                            {% endwith %}
+                            <span class="status-error">ОШИБ ({{ ref.reference_obj.issues.count }})</span>
                         {% else %}
                             <span class="status-unknown">—</span>
                         {% endif %}
+                        <a href="{% url 'reference_errors' ref.id %}" class="button-small" style="margin-left: 10px;">Подробности</a>
                     </td>
                     {% endif %}
                 </tr>

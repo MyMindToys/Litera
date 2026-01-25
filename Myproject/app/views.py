@@ -312,20 +312,10 @@ def reference_errors(request, pk):
     # Получаем parsed_data
     parsed_data = reference.parsed_data if hasattr(reference, 'parsed_data') and reference.parsed_data else {}
 
-    # Ход парсинга: когда парсинг не удался — показываем, что найдено, что нет
-    parse_steps = []
-    if not parsed_data and reference.reference_type_id:
-        try:
-            from .parse_diagnostics import get_parse_diagnostic
-            parse_steps = get_parse_diagnostic(reference.raw_text or "", reference.reference_type.code)
-        except Exception:
-            parse_steps = []
-
     return render(request, 'reference_errors.html', {
         'reference': reference,
         'issues': issues,
         'parsed_data': parsed_data,
-        'parse_steps': parse_steps,
     })
 
 

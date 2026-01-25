@@ -76,17 +76,31 @@ def check_reference(reference: Reference) -> None:
                 # Если регулярка в БД некорректная, просто игнорируем проверку формата
                 pass
 
-    # Специальное правило для ONLINE: при наличии URL дата обращения обязательна (ГОСТ для сетевых ресурсов)
+    # По шаблону типа «Электронный ресурс» (ГОСТ): обязательны URL/Режим доступа либо носитель (CD-ROM и т.п.)
     if reference.reference_type and reference.reference_type.code == "ONLINE":
         url_val = (data.get("url") or "").strip()
         access_val = (data.get("access_date") or "").strip()
+        carrier_val = (data.get("carrier") or "").strip()
+
+        # Сетевой ресурс (есть URL): по шаблону обязательна дата обращения
         if url_val and not access_val:
             errors.append(
                 ReferenceIssue(
                     reference=reference,
                     field_name="access_date",
                     severity="error",
-                    message="Для сетевого ресурса (с URL) укажите дату обращения: (дата обращения: ДД.ММ.ГГГГ).",
+                    message="По шаблону «Электронный ресурс» для сетевого ресурса обязательна дата обращения: (дата обращения: ДД.ММ.ГГГГ).",
+                )
+            )
+
+        # По шаблону «Электронный ресурс» в ссылке должны быть URL (Режим доступа) ИЛИ носитель (CD-ROM и т.п.). Иначе тип не соответствует тексту.
+        if not url_val and not carrier_val:
+            errors.append(
+                ReferenceIssue(
+                    reference=reference,
+                    field_name="url",
+                    severity="error",
+                    message="По шаблону «Электронный ресурс» в ссылке должны быть URL (Режим доступа) или сведения о носителе (CD-ROM и т.п.). В тексте этого нет — выбранный тип не соответствует содержанию.",
                 )
             )
 
